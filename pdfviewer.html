@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <style>
+        #pdf-canvas {
+            border: 1px solid black;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Class10 Science</h1>
+    <!-- <canvas id="pdf-canvas"></canvas> -->
+    <div id="pdf-text"></div>
+
+    <script>
+        // Get class and subject from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const className = urlParams.get('class');
+        const subject = urlParams.get('subject');
+        const chapter = urlParams.get('chapter');
+
+        // Construct the URL to the PDF file
+        const url = `pdfs/${className}/${subject}/${chapter}.pdf`;
+
+        console.log('Loading PDF from:', url);
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+        // Load the PDF
+        const loadingTask = pdfjsLib.getDocument(url);
+        loadingTask.promise.then(pdf => {
+            console.log('PDF loaded');
+            let text = '';
+
+            // Iterate through all pages
+            let pagesPromises = [];
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                pagesPromises.push(pdf.getPage(pageNum).then(page => {
+                    return page.getTextContent().then(textContent => {
+                        let pageText = '';
+                        textContent.items.forEach(item => {
+                            pageText += item.str + ' ';
+                        });
+                        return pageText;
+                    });
+                }));
+            }
+
+            // Resolve all page text promises
+            Promise.all(pagesPromises).then(pagesText => {
+                pagesText.forEach(pageText => {
+                    text += pageText + '\n\n';
+                });
+
+                // Display extracted text
+                document.getElementById('pdf-text').innerText = text;
+
+                // Speak the extracted text
+                speak(`Opened chapter ${chapter}. ${text}`);
+            });
+        }).catch(reason => {
+            console.error('Error loading PDF:', reason);
+            alert('Error loading PDF: ' + reason.message);
+        });
+
+        let utterance = null;
+
+        function speak(text) {
+            utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1; // Default speed
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function stopSpeaking() {
+            window.speechSynthesis.cancel();
+        }
+
+        function changeSpeed(rate) {
+            if (utterance) {
+                utterance.rate = rate;
+                window.speechSynthesis.cancel(); // Stop current speech
+                window.speechSynthesis.speak(utterance); // Restart with new rate
+            }
+        }
+
+        function continueSpeaking() {
+            if (utterance) {
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function rereadLastLines(lines = 5) {
+            let textArray = document.getElementById('pdf-text').innerText.split('\n');
+            let lastLines = textArray.slice(-lines).join(' ');
+            speak(lastLines);
+        }
+
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function reloadPage() {
+            window.location.reload();
+        }
+
+
+        // Speech Recognition
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[event.resultIndex][0].transcript.trim().toLowerCase();
+            console.log('Voice Command:', transcript);
+
+            if (transcript.includes('stop')) {
+                stopSpeaking();
+            } else if (transcript.includes('continue')) {
+                continueSpeaking();
+            } else if (transcript.includes('speed')) {
+                const speed = parseFloat(transcript.split('speed ')[1]);
+                if (!isNaN(speed) && speed > 0) {
+                    changeSpeed(speed);
+                }
+            } else if (transcript.includes('home')) {
+                goHome();
+            } else if (transcript.includes('reread')) {
+                const lines = parseInt(transcript.split('lines ')[1]);
+                if (!isNaN(lines) && lines > 0) {
+                    rereadLastLines(lines);
+                } else {
+                    rereadLastLines(); // Default to 5 lines
+                }
+            } else if (transcript.includes('go back') || transcript.includes('back')) {
+                goBack();
+            } else if (transcript.includes('reload')) {
+                reloadPage();
+            }
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+        };
+
+        recognition.onend = () => {
+            console.log('Speech recognition service disconnected');
+            recognition.start(); // Restart recognition after it ends
+        };
+
+        recognition.onspeechend = () => {
+            console.log('Speech recognition has stopped.');
+        };
+
+        recognition.onstart = () => {
+            console.log('Speech recognition service has started');
+        };
+
+        // Start recognition
+        recognition.start();
+
+        // Ensure speech and recognition stop when navigating away
+        window.addEventListener('beforeunload', () => {
+            stopSpeaking();
+            recognition.stop();
+        });
+    </script>
+</body>
+</html>
