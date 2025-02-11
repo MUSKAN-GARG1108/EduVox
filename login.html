@@ -108,6 +108,7 @@
             } else {
                 localStorage.setItem("token", data.token); // Store authentication token
                 window.location.href = "/index.html"; // Redirect to dashboard
+                updateNavbar();
             }
         } catch (error) {
             errorDiv.innerText = "Error connecting to server.";
