@@ -16,16 +16,18 @@
     "bootstrap": "^5.3.3",
     "connect-mongo": "^5.1.0",
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "express-session": "^1.18.0",
     "fs": "^0.0.1-security",
     "hbs": "^4.2.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.4.1",
+    "mongoose": "^8.10.0",
     "nodemon": "^3.1.0",
     "path": "^0.12.7",
     "pdf-lib": "^1.17.1"
   },
-  "description": ""
+  "description": "EduVox is a comprehensive educational platform designed to facilitate learning and teaching through a variety of digital resources and tools."
 }
