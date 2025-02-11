@@ -76,7 +76,8 @@
             <li><a href="https://eduvoxvisionailearningtool-8zi8smfx3vnznkia2ek3kn.streamlit.app/">Vision learning </a></li>
           </ul>
           
-          <a href="templates/signup.html" class="btn-book btn btn-secondary btn-sm menu-absolute">Sign-In</a>
+          <!-- <a href="signup.html" class="btn-book btn btn-secondary btn-sm menu-absolute">Sign-In</a> -->
+          <a id="auth-btn" class="btn-book btn btn-secondary btn-sm menu-absolute"></a>
 
           <a href="#" class="burger ml-auto float-right site-menu-toggle js-menu-toggle d-inline-block d-lg-none light" data-toggle="collapse" data-target="#main-navbar">
             <span></span>
@@ -919,7 +920,29 @@
             const utterance = new SpeechSynthesisUtterance(text);
             window.speechSynthesis.speak(utterance);
           }
-      }
+
+          function updateNavbar() {
+              const token = localStorage.getItem("token");
+              const authBtn = document.getElementById("auth-btn");
+
+              if (token) {
+                  // User is logged in -> Show Logout button
+                  authBtn.innerText = "Logout";
+                  authBtn.href = "#";
+                  authBtn.onclick = function () {
+                      localStorage.removeItem("token"); // Remove token on logout
+                      window.location.href = "login.html"; // Redirect to login page
+                  };
+              } else {
+                  // User is not logged in -> Show Sign-In button
+                  authBtn.innerText = "Sign-In";
+                  authBtn.href = "signup.html";
+              }
+          }
+
+          // Call function when page loads
+          updateNavbar();
+        }
   </script>
 
 
