@@ -95,7 +95,7 @@
   </div>
 
   <script>
-    const API_URL = "https://eduvox.onrender.com/";
+    const API_URL = "/";
 
     document.getElementById('signupForm').addEventListener('submit', async function(event) {
         event.preventDefault(); // Prevent normal form submission
@@ -139,10 +139,10 @@
             if (!response.ok) {
                 errorMessage.innerText = `Error: ${data.message || "Signup failed."}`;
             } else {
+                localStorage.setItem("token", data.token); // Store token after signup
                 successMessage.innerText = "Signup successful! Redirecting...";
-                setTimeout(() => {
-                    window.location.href = "index.html";
-                }, 2000);
+                window.location.href = "index.html";
+                updateNavbar();
             }
         } catch (error) {
             console.error("Signup error:", error);
