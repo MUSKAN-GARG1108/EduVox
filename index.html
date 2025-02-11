@@ -925,23 +925,28 @@
               const token = localStorage.getItem("token");
               const authBtn = document.getElementById("auth-btn");
 
-              if (token) {
-                  // User is logged in -> Show Logout button
-                  authBtn.innerText = "Logout";
-                  authBtn.href = "#";
-                  authBtn.onclick = function () {
-                      localStorage.removeItem("token"); // Remove token on logout
-                      window.location.href = "login.html"; // Redirect to login page
-                  };
-              } else {
-                  // User is not logged in -> Show Sign-In button
-                  authBtn.innerText = "Sign-In";
-                  authBtn.href = "signup.html";
+              if (authBtn) {
+                  if (token) {
+                      // User is logged in -> Show Logout button
+                      authBtn.innerText = "Logout";
+                      authBtn.href = "#";
+                      authBtn.onclick = function () {
+                          localStorage.removeItem("token"); // Remove token on logout
+                          window.location.href = "login.html"; // Redirect to login page
+                          updateNavbar(); // Ensure navbar updates after logout
+                      };
+                  } else {
+                      // User is not logged in -> Show Sign-In button
+                      authBtn.innerText = "Sign-In";
+                      authBtn.href = "signup.html";
+                      authBtn.onclick = null; // Remove any previous logout event
+                  }
               }
           }
 
           // Call function when page loads
-          updateNavbar();
+          document.addEventListener("DOMContentLoaded", updateNavbar);
+
         }
   </script>
 
